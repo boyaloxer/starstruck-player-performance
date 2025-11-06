@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WoW Classic Raid Score Calculator</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111a2b;
+      --accent: #6ee7ff;
+      --muted: #9fb3c8;
+      --danger: #ff6b6b;
+      --ok: #38d39f;
+      --text: #e6eef6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+        Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1220, #0a0f19);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 880px;
+      margin: 40px auto;
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid #1d2940;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    p {
+      color: var(--muted);
+      margin: 6px 0 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .row {
+      display: contents;
+    }
+
+    label {
+      font-weight: 600;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #2a3958;
+      background: #0c1425;
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    input[type="number"]:focus {
+      outline: 2px solid var(--accent);
+      border-color: transparent;
+    }
+
+    .stack {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid #2a3958;
+      background: #0c1425;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    button.primary {
+      background: linear-gradient(90deg, #41b3ff, #6ee7ff);
+      color: #031222;
+      border: none;
+    }
+
+    .result {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+      margin-top: 12px;
+    }
+
+    .result .score {
+      font-size: 36px;
+      font-weight: 900;
+    }
+
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid #2a3958;
+      color: var(--muted);
+    }
+
+    .warn {
+      color: var(--danger);
+    }
+
+    .ok {
+      color: var(--ok);
+    }
+
+    details {
+      margin-top: 18px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--accent);
+    }
+
+    .weights {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      margin-top: 36px;
+      color: #7e91ac;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Raid Score Calculator</h1>
+      <p>
+        Enter 1–10 for each metric. Attendance is an <em>implicit rule</em> and does not
+        change the math; it will be flagged if below 80%.
+      </p>
+
+      <div class="grid" id="form">
+        <div class="row">
+          <label for="adapt">Adaptability (30%)</label>
+          <input id="adapt" type="number" min="0" max="10" step="0.1" value="10" />
+        </div>
+        <div class="row">
+          <label for="mech">Mechanics Execution (25%)</label>
+          <input id="mech" type="number" min="0" max="10" step="0.1" value="10" />
+        </div>
+        <div class="row">
+          <label for="class">Class Specific Execution (20%)</label>
+          <input id="class" type="number" min="0" max="10" step="0.1" value="10" />
+        </div>
+        <div class="row">
+          <label for="prep">Raid Prep (10%)</label>
+          <input id="prep" type="number" min="0" max="10" step="0.1" value="10" />
+        </div>
+        <div class="row">
+          <label for="raw">Raw Parses (5%)</label>
+          <input id="raw" type="number" min="0" max="10" step="0.1" value="10" />
+        </div>
+        <div class="row">
+          <label for="attitude">Attitude (handled separately)</label>
+          <input id="attitude" type="number" min="0" max="10" step="0.1" value="10" />
+        </div>
+        <div class="row">
+          <label for="attend">Attendance % (flag if &lt; 80%)</label>
+          <input id="attend" type="number" min="0" max="100" step="1" value="100" />
+        </div>
+      </div>
+
+      <div class="stack">
+        <button class="primary" id="calc">Calculate</button>
+        <button id="reset">Reset to 10s</button>
+        <span class="pill" id="normNote">Normalized to 10-point scale</span>
+      </div>
+
+      <div class="result">
+        <div>Total:</div>
+        <div class="score" id="total">10.00</div>
+        <div class="pill" id="outOf100">100.00 / 100</div>
+        <div id="attnFlag" class="pill"></div>
+      </div>
+
+      <details>
+        <summary>Show weights & formula</summary>
+        <div class="weights" id="weights"></div>
+      </details>
+    </div>
+
+    <footer>
+      Made for WoW Classic guild evaluation. Static, client-side calculator—perfect for
+      GitHub Pages.
+    </footer>
+  </div>
+
+  <script>
+    const weights = {
+      adapt: 0.3,
+      mech: 0.25,
+      class: 0.2,
+      prep: 0.1,
+      raw: 0.05,
+    };
+
+    const activeWeightSum = Object.values(weights).reduce(
+      (acc, value) => acc + value,
+      0,
+    );
+
+    function clamp(value, min, max) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) {
+        return 0;
+      }
+      return Math.max(min, Math.min(max, num));
+    }
+
+    function calc() {
+      const get = (id) => document.getElementById(id);
+
+      ["adapt", "mech", "class", "prep", "raw", "attitude"].forEach((id) => {
+        const element = get(id);
+        element.value = clamp(element.value, 0, 10);
+      });
+
+      const attendance = clamp(get("attend").value, 0, 100);
+
+      let sum = 0;
+      for (const [id, weight] of Object.entries(weights)) {
+        sum += Number(get(id).value) * weight;
+      }
+
+      const total10 = sum / activeWeightSum;
+      const total100 = total10 * 10;
+
+      get("total").textContent = total10.toFixed(2);
+      get("outOf100").textContent = `${total100.toFixed(2)} / 100`;
+
+      const flag = get("attnFlag");
+      if (attendance < 80) {
+        flag.textContent = `ATTENDANCE: ${attendance.toFixed(0)}% (FLAG)`;
+        flag.className = "pill warn";
+      } else {
+        flag.textContent = `Attendance OK: ${attendance.toFixed(0)}%`;
+        flag.className = "pill ok";
+      }
+
+      const names = {
+        adapt: "Adaptability",
+        mech: "Mechanics Execution",
+        class: "Class Specific Execution",
+        prep: "Raid Prep",
+        raw: "Raw Parses",
+      };
+
+      const weightLines = Object.entries(weights)
+        .map(([key, value]) => `${names[key]} — ${(value * 100).toFixed(0)}%`)
+        .join("<br>");
+
+      const normalized = `Active Weight Sum = ${(activeWeightSum * 100).toFixed(0)}% (normalized)`;
+      get("weights").innerHTML = `${weightLines}<br>${normalized}`;
+    }
+
+    document.getElementById("calc").addEventListener("click", calc);
+
+    document.getElementById("reset").addEventListener("click", () => {
+      ["adapt", "mech", "class", "prep", "raw", "attitude"].forEach((id) => {
+        document.getElementById(id).value = 10;
+      });
+      document.getElementById("attend").value = 100;
+      calc();
+    });
+
+    document.querySelectorAll("input").forEach((element) => {
+      element.addEventListener("input", calc);
+    });
+
+    calc();
+  </script>
+</body>
+</html>
+
