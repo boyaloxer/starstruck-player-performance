@@ -261,17 +261,20 @@
       const total10 = sum / activeWeightSum;
       const total100 = total10 * 10;
 
-      get("total").textContent = total10.toFixed(2);
-      get("outOf100").textContent = `${total100.toFixed(2)} / 100`;
-
       const flag = get("attnFlag");
       if (attendance < 80) {
         flag.textContent = `ATTENDANCE: ${attendance.toFixed(0)}% (FLAG)`;
         flag.className = "pill warn";
-      } else {
-        flag.textContent = `Attendance OK: ${attendance.toFixed(0)}%`;
-        flag.className = "pill ok";
+        get("total").textContent = "0.00";
+        get("outOf100").textContent = "0.00 / 100";
+        return;
       }
+
+      flag.textContent = `Attendance OK: ${attendance.toFixed(0)}%`;
+      flag.className = "pill ok";
+
+      get("total").textContent = total10.toFixed(2);
+      get("outOf100").textContent = `${total100.toFixed(2)} / 100`;
 
       const names = {
         adapt: "Adaptability",
