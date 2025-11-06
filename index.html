@@ -303,7 +303,10 @@
     document.querySelectorAll("input").forEach((element) => {
       element.addEventListener("input", calc);
     });
-
+    ["adapt", "mech", "class", "prep", "raw", "attitude"].forEach((id) => {
+      document.getElementById(id).value = 10;
+    });
+    document.getElementById("attend").value = 100;
     calc();
   </script>
 </body>
