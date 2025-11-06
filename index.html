@@ -66,6 +66,11 @@
       font-weight: 600;
     }
 
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+    }
+
     input[type="number"] {
       width: 100%;
       padding: 10px 12px;
@@ -77,6 +82,21 @@
     }
 
     input[type="number"]:focus {
+      outline: 2px solid var(--accent);
+      border-color: transparent;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #2a3958;
+      background: #0c1425;
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    input[type="text"]:focus {
       outline: 2px solid var(--accent);
       border-color: transparent;
     }
@@ -158,6 +178,16 @@
         Enter 1–10 for each metric. Attendance is an <em>implicit rule</em> and will be
         flagged if below 80%.
       </p>
+
+      <div class="field">
+        <label for="playerName">Player Name</label>
+        <input
+          id="playerName"
+          type="text"
+          placeholder="Enter player name"
+          autocomplete="off"
+        />
+      </div>
 
       <div class="grid" id="form">
         <div class="row">
