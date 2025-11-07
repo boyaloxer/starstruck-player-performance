@@ -505,7 +505,9 @@
       doc.setFont("helvetica", "bold");
       doc.setFontSize(20);
       doc.setTextColor(...colors.text);
-      doc.text("Starstruck Player Performance Review", marginX, cursorY);
+      doc.text("Starstruck Player Performance Review", pageWidth / 2, cursorY, {
+        align: "center",
+      });
 
       cursorY += 18;
       doc.setFontSize(11);
@@ -523,15 +525,21 @@
         { label: "Report Generated", value: generatedStamp },
       ];
 
-      const summaryColumnWidth = contentWidth / summaryItems.length;
+      const summaryPositions = [
+        marginX + 36,
+        marginX + contentWidth / 2,
+        marginX + contentWidth - 36,
+      ];
+
       summaryItems.forEach((entry, index) => {
-        const columnX = marginX + index * summaryColumnWidth + 16;
+        const columnX = summaryPositions[index];
+        const align = index === 0 ? "left" : index === 1 ? "center" : "right";
         doc.setFont("helvetica", "bold");
         doc.setTextColor(...colors.accent);
-        doc.text(entry.label, columnX, cursorY - 18);
+        doc.text(entry.label, columnX, cursorY - 18, { align });
         doc.setFont("helvetica", "normal");
         doc.setTextColor(...colors.text);
-        doc.text(entry.value, columnX, cursorY + 4);
+        doc.text(entry.value, columnX, cursorY + 4, { align });
       });
 
       cursorY += summaryHeight + 18;
