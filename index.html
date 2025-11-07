@@ -233,6 +233,63 @@
       margin-top: 10px;
     }
 
+    .report-preview {
+      position: fixed;
+      top: -9999px;
+      left: -9999px;
+      width: 800px;
+      padding: 32px 36px;
+      background: #0b1220;
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    .report-preview .summary-box {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px;
+      border-radius: 12px;
+      background: #111a2b;
+      border: 1px solid #1d2940;
+      margin: 16px 0 20px;
+    }
+
+    .report-preview .summary-box div {
+      flex: 1;
+      text-align: center;
+    }
+
+    .report-preview .summary-label {
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .report-preview table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #1d2940;
+      margin-top: 22px;
+    }
+
+    .report-preview th,
+    .report-preview td {
+      border: 1px solid #1d2940;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    .report-preview th {
+      background: #19263e;
+      color: var(--accent);
+      text-align: left;
+    }
+
+    .report-preview tbody tr:nth-child(every) {
+      background: #101a2c;
+    }
+
   </style>
 </head>
 <body>
@@ -340,6 +397,7 @@
 
       <div class="stack">
         <button id="downloadPdf">Download PDF</button>
+        <button id="downloadPng">Download PNG</button>
       </div>
 
       <div class="result">
@@ -351,6 +409,8 @@
     </div>
 
   </div>
+
+  <div class="report-preview" id="reportPreview"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -443,6 +503,10 @@
     document
       .getElementById("downloadPdf")
       .addEventListener("click", handleDownloadPdf);
+
+    document
+      .getElementById("downloadPng")
+      .addEventListener("click", handleDownloadPng);
 
     function handleDownloadPdf() {
       if (!window.jspdf || !window.jspdf.jsPDF) {
@@ -656,6 +720,144 @@
         .replace(/^-|-$/g, "");
 
       doc.save(`${filenameBase || "player-review"}.pdf`);
+    }
+
+    async function handleDownloadPng() {
+      const preview = buildReportPreview();
+      document.body.appendChild(preview);
+
+      try {
+        if (!window.html2canvas) {
+          await loadHtml2Canvas();
+        }
+
+        const canvas = await window.html2canvas(preview, {
+          backgroundColor: null,
+          scale: 2,
+        });
+
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            console.error("Failed to create PNG blob");
+            return;
+          }
+          const playerRaw = getSafeValue(document.getElementById("playerName").value, "player");
+          const filenameBase = playerRaw
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "");
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = `${filenameBase || "player-review"}.png`;
+          link.click();
+          URL.revokeObjectURL(link.href);
+        }, "image/png");
+      } catch (error) {
+        console.error("Failed to generate PNG", error);
+      } finally {
+        document.body.removeChild(preview);
+      }
+    }
+
+    function buildReportPreview() {
+      const container = document.createElement("div");
+      container.className = "report-preview";
+
+      const player = getSafeValue(document.getElementById("playerName").value, "—");
+      const attendance = Number(document.getElementById("attend").value || 0);
+      const attendanceStatus = getSafeValue(document.getElementById("attnFlag").textContent, "—");
+      const totalScore = getSafeValue(document.getElementById("total").textContent, "0.00");
+      const total100 = getSafeValue(document.getElementById("outOf100").textContent, "0.00 / 100");
+      const generatedStamp = new Date().toLocaleString();
+
+      const header = document.createElement("div");
+      header.innerHTML = `<h1 style="margin:0;font-size:24px;text-align:center;">Starstruck Player Performance Review</h1>`;
+
+      const summary = document.createElement("div");
+      summary.className = "summary-box";
+      summary.innerHTML = `
+        <div>
+          <div class="summary-label">Player</div>
+          <div>${player}</div>
+        </div>
+        <div>
+          <div class="summary-label">Overall Performance (0 - 10)</div>
+          <div>${totalScore}</div>
+        </div>
+        <div>
+          <div class="summary-label">Report Generated</div>
+          <div>${generatedStamp}</div>
+        </div>`;
+
+      const attendanceRow = document.createElement("div");
+      attendanceRow.style.display = "flex";
+      attendanceRow.style.justifyContent = "space-between";
+      attendanceRow.style.marginTop = "6px";
+      attendanceRow.style.color = "#9fb3c8";
+      attendanceRow.innerHTML = `
+        <div><strong>Attendance:</strong> ${attendance.toFixed(0)}%</div>
+        <div><strong>Status:</strong> ${attendanceStatus}</div>`;
+
+      const table = document.createElement("table");
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Score (0 - 10)</th>
+            <th>Reasoning / Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${metricMeta
+            .map((meta) => {
+              const score = Number(document.getElementById(meta.id).value).toFixed(2);
+              const reason = getSafeValue(
+                document.getElementById(meta.reason).value,
+                "—",
+              ).replace(/\n/g, "<br>");
+              return `<tr><td>${meta.label}</td><td>${score}</td><td>${reason}</td></tr>`;
+            })
+            .join("")}
+        </tbody>`;
+
+      const weightTable = document.createElement("table");
+      weightTable.style.marginTop = "18px";
+      weightTable.innerHTML = `
+        <thead>
+          <tr><th>Metric</th><th>Weight</th></tr>
+        </thead>
+        <tbody>
+          ${Object.entries(weights)
+            .map(([key, value]) => {
+              const label = metricMeta.find((meta) => meta.id === key)?.label || key;
+              return `<tr><td>${label}</td><td>${(value * 100).toFixed(0)}%</td></tr>`;
+            })
+            .join("")}
+        </tbody>`;
+
+      container.appendChild(header);
+      container.appendChild(summary);
+      container.appendChild(attendanceRow);
+      container.appendChild(table);
+      container.appendChild(weightTable);
+
+      return container;
+    }
+
+    function getSafeValue(raw, fallback) {
+      if (!raw) return fallback;
+      const str = raw.toString().trim();
+      return str.length ? str : fallback;
+    }
+
+    function loadHtml2Canvas() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Failed to load html2canvas"));
+        document.body.appendChild(script);
+      });
     }
 
     function bindInputs() {
