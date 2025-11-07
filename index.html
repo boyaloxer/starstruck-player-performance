@@ -443,7 +443,7 @@
       const pageWidth = doc.internal.pageSize.getWidth();
       const contentWidth = pageWidth - marginX * 2;
       const pageHeight = doc.internal.pageSize.getHeight();
-      let cursorY = 80;
+      let cursorY = 96;
 
       const colors = {
         background: [11, 18, 32],
@@ -511,30 +511,14 @@
       doc.setFontSize(11);
       doc.setTextColor(...colors.text);
 
-      const metaEntries = [
-        { label: "Player", value: playerRaw },
-        { label: "Attendance", value: `${attendance.toFixed(0)}%` },
-        { label: "Status", value: attendanceStatus },
-      ];
-
-      const metaColumnWidth = contentWidth / metaEntries.length;
-      metaEntries.forEach((entry, index) => {
-        const columnX = marginX + index * metaColumnWidth;
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...colors.accent);
-        doc.text(`${entry.label}:`, columnX, cursorY);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(...colors.text);
-        doc.text(entry.value, columnX + 58, cursorY);
-      });
-
-      cursorY += 28;
+      cursorY += 24;
       const summaryHeight = 64;
       doc.setDrawColor(...colors.border);
       doc.setFillColor(...colors.card);
       doc.roundedRect(marginX, cursorY - 44, contentWidth, summaryHeight, 10, 10, "DF");
 
       const summaryItems = [
+        { label: "Player", value: playerRaw },
         { label: "Total (0 - 10)", value: totalScore },
         { label: "Report Generated", value: generatedStamp },
       ];
@@ -550,7 +534,26 @@
         doc.text(entry.value, columnX, cursorY + 4);
       });
 
-      cursorY += summaryHeight + 10;
+      cursorY += summaryHeight + 18;
+
+      const metaLineY = cursorY;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(...colors.accent);
+      doc.text("Attendance:", marginX, metaLineY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...colors.text);
+      doc.text(`${attendance.toFixed(0)}%`, marginX + 76, metaLineY);
+
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...colors.accent);
+      const statusX = marginX + contentWidth / 2;
+      doc.text("Status:", statusX, metaLineY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...colors.text);
+      doc.text(attendanceStatus, statusX + 52, metaLineY);
+
+      cursorY += 26;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.setTextColor(...colors.text);
