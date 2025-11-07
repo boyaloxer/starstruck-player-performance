@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Starstruck Metric Guide</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111a2b;
+      --accent: #6ee7ff;
+      --muted: #9fb3c8;
+      --text: #e6eef6;
+      --border: #1d2940;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+        Cantarell, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1220, #0a0f19);
+      color: var(--text);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover,
+    a:focus {
+      text-decoration: underline;
+    }
+
+    .wrap {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 32px 36px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    header p {
+      color: var(--muted);
+      margin: 12px auto 0;
+      max-width: 660px;
+      line-height: 1.5;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: var(--muted);
+    }
+
+    .metrics {
+      display: grid;
+      gap: 22px;
+    }
+
+    .metric {
+      background: rgba(13, 20, 35, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+    }
+
+    .metric h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .metric h2 span {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-left: 10px;
+    }
+
+    .metric p {
+      margin: 12px 0 0;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .metric ul {
+      margin: 16px 0 0;
+      padding-left: 22px;
+      color: var(--muted);
+    }
+
+    .metric li {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="index.html">← Back to Player Performance Calculator</a>
+    <div class="card">
+      <header>
+        <h1>Metric Reference Guide</h1>
+        <p>
+          Every category in the Starstruck Player Performance Calculator represents a
+          specific expectation of raider behavior. Use this guide to align your scoring
+          and keep feedback consistent across reviewers.
+        </p>
+      </header>
+
+      <div class="metrics">
+        <section class="metric" id="adaptability">
+          <h2>Adaptability <span>30%</span></h2>
+          <p>
+            Measures how quickly the player learns and applies changes—new mechanics,
+            raid plans, or unexpected events mid-encounter. High scores reflect smooth
+            execution after adjustments with minimal reminder.
+          </p>
+          <ul>
+            <li><strong>10:</strong> Anticipates adjustments, teaches others, almost zero re-explains.</li>
+            <li><strong>7–8:</strong> Quickly course-corrects after feedback, no repeat mistakes.</li>
+            <li><strong>4–5:</strong> Needs multiple reminders, adapts but slowly.</li>
+            <li><strong>1–2:</strong> Resists changes or repeats mistakes that wipe the raid.</li>
+          </ul>
+        </section>
+
+        <section class="metric" id="mechanics">
+          <h2>Mechanics Execution <span>25%</span></h2>
+          <p>
+            Captures performance on encounter-specific duties—soaks, interrupts, movement,
+            cooldown timing, etc. A high score means reliable execution regardless of
+            pressure.
+          </p>
+          <ul>
+            <li><strong>10:</strong> Executes flawlessly, covers for others, never misses assignments.</li>
+            <li><strong>7–8:</strong> Occasional minor slip, recovers without raid impact.</li>
+            <li><strong>4–5:</strong> Misses key mechanics, causes avoidable group damage.</li>
+            <li><strong>1–2:</strong> Frequently dies to basics or causes wipes.</li>
+          </ul>
+        </section>
+
+        <section class="metric" id="class-specific">
+          <h2>Class Specific Execution <span>20%</span></h2>
+          <p>
+            Rates how well the player leverages their toolkit—rotation, cooldown sync,
+            spec choices, utility usage, consumables, and stat priorities. Focus on
+            fundamentals, not just logs.
+          </p>
+          <ul>
+            <li><strong>10:</strong> Exemplary use of kit, optimizes for encounter, shares knowledge.</li>
+            <li><strong>7–8:</strong> Strong baseline with room for polish on min-maxing.</li>
+            <li><strong>4–5:</strong> Noticeable gaps (late cooldowns, wrong talents, poor utility).</li>
+            <li><strong>1–2:</strong> Lacks basic understanding, hurts group synergy.</li>
+          </ul>
+        </section>
+
+        <section class="metric" id="prep">
+          <h2>Raid Prep <span>10%</span></h2>
+          <p>
+            Reviews readiness outside of combat—consumables, enchants, gear maintenance,
+            boss research, attendance to strategy meetings, and being on time.
+          </p>
+          <ul>
+            <li><strong>10:</strong> Always prepared, helps distribute materials or strategies.</li>
+            <li><strong>7–8:</strong> Arrives fully prepped with rare lapses (e.g., one missing flask).</li>
+            <li><strong>4–5:</strong> Frequently forgets consumables or shows up late.</li>
+            <li><strong>1–2:</strong> Chronic lack of prep, others must cover gaps.</li>
+          </ul>
+        </section>
+
+        <section class="metric" id="parses">
+          <h2>Raw Parses <span>5%</span></h2>
+          <p>
+            Pure throughput relative to role—DPS, healing, or mitigation. This is the least
+            weighted metric; focus on effort and improvement trajectory, not just color
+            rankings.
+          </p>
+          <ul>
+            <li><strong>10:</strong> Competitive logs without sacrificing mechanics.</li>
+            <li><strong>7–8:</strong> Solid numbers, maybe lacking some optimization.</li>
+            <li><strong>4–5:</strong> Underperforms for ilvl/role, inconsistent uptimes.</li>
+            <li><strong>1–2:</strong> Far below peers; indicates rotation or gear issues.</li>
+          </ul>
+        </section>
+
+        <section class="metric" id="attitude">
+          <h2>Attitude <span>5%</span></h2>
+          <p>
+            Evaluates communication, coachability, and team impact. Scores reflect how the
+            player contributes to raid morale and resolves conflict.
+          </p>
+          <ul>
+            <li><strong>10:</strong> Positive force, owns mistakes, uplifts teammates.</li>
+            <li><strong>7–8:</strong> Generally upbeat, accepts feedback, occasional frustration.</li>
+            <li><strong>4–5:</strong> Dismissive of guidance, causes friction, salty comms.</li>
+            <li><strong>1–2:</strong> Toxic behavior, blames others, undermines leadership.</li>
+          </ul>
+        </section>
+
+        <section class="metric" id="attendance">
+          <h2>Attendance Policy</h2>
+          <p>
+            Attendance is tracked separately—falling below 80% is an automatic flag for
+            follow-up and may override performance scores. Use the calculator to note the
+            percentage and detail any context in the notes section.
+          </p>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
