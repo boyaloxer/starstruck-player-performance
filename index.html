@@ -442,7 +442,24 @@
       const marginX = 54;
       const pageWidth = doc.internal.pageSize.getWidth();
       const contentWidth = pageWidth - marginX * 2;
+      const pageHeight = doc.internal.pageSize.getHeight();
       let cursorY = 80;
+
+      const colors = {
+        background: [11, 18, 32],
+        card: [17, 26, 43],
+        accent: [110, 231, 255],
+        text: [230, 238, 246],
+        muted: [178, 195, 215],
+        border: [38, 58, 88],
+        tableHead: [25, 38, 62],
+        tableRow: [17, 26, 43],
+        tableRowAlt: [21, 32, 50],
+        pillBg: [13, 22, 39],
+      };
+
+      doc.setFillColor(...colors.background);
+      doc.rect(0, 0, pageWidth, pageHeight, "F");
 
       const getValue = (value, fallback = "—") =>
         value && value.toString().trim().length > 0 ? value.toString().trim() : fallback;
@@ -477,12 +494,12 @@
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(20);
-      doc.setTextColor(12, 26, 51);
+      doc.setTextColor(...colors.text);
       doc.text("Starstruck Player Performance Review", marginX, cursorY);
 
       cursorY += 26;
       doc.setFontSize(11);
-      doc.setTextColor(26, 31, 43);
+      doc.setTextColor(...colors.text);
 
       const metaEntries = [
         { label: "Player", value: playerRaw },
@@ -494,16 +511,18 @@
       metaEntries.forEach((entry, index) => {
         const columnX = marginX + index * metaColumnWidth;
         doc.setFont("helvetica", "bold");
+        doc.setTextColor(...colors.accent);
         doc.text(`${entry.label}:`, columnX, cursorY);
         doc.setFont("helvetica", "normal");
+        doc.setTextColor(...colors.text);
         doc.text(entry.value, columnX + 58, cursorY);
       });
 
       cursorY += 28;
       const summaryHeight = 64;
-      doc.setDrawColor(211, 219, 231);
-      doc.setFillColor(247, 249, 252);
-      doc.roundedRect(marginX, cursorY - 44, contentWidth, summaryHeight, 10, 10, "FD");
+      doc.setDrawColor(...colors.border);
+      doc.setFillColor(...colors.card);
+      doc.roundedRect(marginX, cursorY - 44, contentWidth, summaryHeight, 10, 10, "DF");
 
       const summaryItems = [
         { label: "Total (0 - 10)", value: totalScore },
@@ -515,14 +534,17 @@
       summaryItems.forEach((entry, index) => {
         const columnX = marginX + index * summaryColumnWidth + 16;
         doc.setFont("helvetica", "bold");
+        doc.setTextColor(...colors.accent);
         doc.text(entry.label, columnX, cursorY - 18);
         doc.setFont("helvetica", "normal");
+        doc.setTextColor(...colors.text);
         doc.text(entry.value, columnX, cursorY + 4);
       });
 
       cursorY += summaryHeight + 10;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
+      doc.setTextColor(...colors.text);
       doc.text("Metric Breakdown", marginX, cursorY);
 
       cursorY += 8;
@@ -532,20 +554,21 @@
         body: metricRows,
         margin: { left: marginX, right: marginX },
         headStyles: {
-          fillColor: [238, 243, 251],
-          textColor: [12, 26, 51],
+          fillColor: colors.tableHead,
+          textColor: colors.text,
           fontSize: 11,
         },
         styles: {
           font: "helvetica",
           fontSize: 10,
           cellPadding: { top: 6, right: 6, bottom: 6, left: 6 },
-          lineColor: [211, 219, 231],
+          lineColor: colors.border,
           lineWidth: 0.6,
-          textColor: [26, 31, 43],
+          textColor: colors.text,
+          fillColor: colors.tableRow,
         },
         alternateRowStyles: {
-          fillColor: [248, 250, 253],
+          fillColor: colors.tableRowAlt,
         },
         columnStyles: {
           1: { halign: "center", cellWidth: 90 },
@@ -553,7 +576,7 @@
         },
         didDrawPage: (data) => {
           doc.setFontSize(10);
-          doc.setTextColor(120, 130, 150);
+          doc.setTextColor(...colors.muted);
           doc.text(
             `Starstruck Player Performance · Generated ${generatedStamp}`,
             marginX,
@@ -569,6 +592,7 @@
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
+      doc.setTextColor(...colors.text);
       doc.text("Weight Reference", marginX, tableBottom + 26);
 
       doc.autoTable({
@@ -577,20 +601,21 @@
         body: weightRows,
         margin: { left: marginX, right: marginX },
         headStyles: {
-          fillColor: [238, 243, 251],
-          textColor: [12, 26, 51],
+          fillColor: colors.tableHead,
+          textColor: colors.text,
           fontSize: 11,
         },
         styles: {
           font: "helvetica",
           fontSize: 10,
           cellPadding: { top: 6, right: 6, bottom: 6, left: 6 },
-          lineColor: [211, 219, 231],
+          lineColor: colors.border,
           lineWidth: 0.6,
-          textColor: [26, 31, 43],
+          textColor: colors.text,
+          fillColor: colors.tableRow,
         },
         alternateRowStyles: {
-          fillColor: [248, 250, 253],
+          fillColor: colors.tableRowAlt,
         },
         columnStyles: {
           1: { halign: "center" },
