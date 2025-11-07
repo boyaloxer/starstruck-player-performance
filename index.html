@@ -57,14 +57,15 @@
     }
 
     .grid {
-      display: grid;
-      grid-template-columns: 1fr 120px;
-      gap: 12px;
-      align-items: center;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
     }
 
     .row {
-      display: contents;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     label {
@@ -95,13 +96,14 @@
     }
 
     input[type="number"] {
-      width: 100%;
+      width: 120px;
       padding: 10px 12px;
       border-radius: 10px;
       border: 1px solid #2a3958;
       background: #0c1425;
       color: var(--text);
       font-size: 15px;
+      align-self: flex-start;
     }
 
     input[type="number"]:focus {
