@@ -435,7 +435,9 @@
         .join("<br>");
 
       const normalized = `Active Weight Sum = ${(activeWeightSum * 100).toFixed(0)}% (normalized)`;
-      get("weights").innerHTML = `${weightLines}<br>${normalized}`;
+      const formulaText =
+        "Total = (Adaptability × 0.30 + Mechanics Execution × 0.25 + Class Specific Execution × 0.20 + Raid Prep × 0.10 + Raw Parses × 0.05 + Attitude × 0.05) ÷ 0.95";
+      get("weights").innerHTML = `${weightLines}<br>${normalized}<br><br><em>${formulaText}</em>`;
     }
 
     document
