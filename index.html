@@ -458,6 +458,16 @@
         pillBg: [13, 22, 39],
       };
 
+      const originalAddPage = doc.addPage.bind(doc);
+      doc.addPage = function (...args) {
+        const result = originalAddPage(...args);
+        const width = this.internal.pageSize.getWidth();
+        const height = this.internal.pageSize.getHeight();
+        this.setFillColor(...colors.background);
+        this.rect(0, 0, width, height, "F");
+        return result;
+      };
+
       doc.setFillColor(...colors.background);
       doc.rect(0, 0, pageWidth, pageHeight, "F");
 
