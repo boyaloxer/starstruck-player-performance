@@ -156,6 +156,11 @@
       border-color: transparent;
     }
 
+    .card header {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
     .stack {
       display: flex;
       gap: 10px;
@@ -223,6 +228,11 @@
       font-size: 14px;
     }
 
+    .formula-toggle {
+      display: inline-block;
+      margin-top: 10px;
+    }
+
   </style>
 </head>
 <body>
@@ -233,6 +243,10 @@
         <p>
           Enter 0–10 for each metric. Attendance is measured 0–100%.
         </p>
+        <details class="formula-toggle">
+          <summary>Show weights & formula</summary>
+          <div class="weights" id="weights"></div>
+        </details>
       </header>
 
       <div class="field">
@@ -334,11 +348,6 @@
         <div class="pill" id="outOf100">100.00 / 100</div>
         <div id="attnFlag" class="pill"></div>
       </div>
-
-      <details>
-        <summary>Show weights & formula</summary>
-        <div class="weights" id="weights"></div>
-      </details>
     </div>
 
   </div>
