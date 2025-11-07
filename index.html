@@ -354,6 +354,8 @@
       { id: "attitude", label: "Attitude", reason: "attitudeReason" },
     ];
 
+    const metricIds = metricMeta.map((meta) => meta.id);
+    const reasonIds = metricMeta.map((meta) => meta.reason);
     const activeWeightSum = Object.values(weights).reduce(
       (acc, value) => acc + value,
       0,
@@ -370,7 +372,7 @@
     function calc() {
       const get = (id) => document.getElementById(id);
 
-      ["adapt", "mech", "class", "prep", "raw", "attitude"].forEach((id) => {
+      metricIds.forEach((id) => {
         const element = get(id);
         element.value = clamp(element.value, 0, 10);
       });
@@ -502,19 +504,36 @@
         jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
       };
 
-      html2pdf().set(options).from(pdfShell).save();
+      if (typeof html2pdf === "function") {
+        html2pdf().set(options).from(pdfShell).save();
+      } else {
+        window.print();
+      }
     }
 
-    document.querySelectorAll("input").forEach((element) => {
-      element.addEventListener("input", calc);
-    });
-    metricMeta.forEach((meta) => {
-      document.getElementById(meta.id).value = 10;
-    });
-    document.getElementById("attend").value = 100;
-    document.querySelectorAll(".reason-input").forEach((element) => {
-      element.value = "";
-    });
+    function bindInputs() {
+      const attendanceInput = document.getElementById("attend");
+      const fieldInputs = metricIds
+        .map((id) => document.getElementById(id))
+        .concat(attendanceInput);
+
+      fieldInputs.forEach((input) => {
+        ["input", "change"].forEach((evt) => input.addEventListener(evt, calc));
+      });
+    }
+
+    function initializeDefaults() {
+      metricIds.forEach((id) => {
+        document.getElementById(id).value = 10;
+      });
+      document.getElementById("attend").value = 100;
+      reasonIds.forEach((id) => {
+        document.getElementById(id).value = "";
+      });
+    }
+
+    bindInputs();
+    initializeDefaults();
     calc();
         document.getElementById(id).value = 10;
       });
