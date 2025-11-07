@@ -329,12 +329,7 @@
 
   </div>
 
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
-    integrity="sha512-y8bZ0r7OjTBYMJd3wa9u0edPFsKnz03Wx/ju0RduCMsZ/HXXIQK5vC1DY0RYx1b6jVKWkPYqgkP4dFl4p9GTAQ=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
-  ></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
     const weights = {
       adapt: 0.3,
@@ -434,81 +429,124 @@
       .getElementById("downloadPdf")
       .addEventListener("click", handleDownloadPdf);
 
+    function escapeHtml(raw) {
+      return raw
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
     function handleDownloadPdf() {
-      const player = document.getElementById("playerName").value.trim();
-      const attendance = document.getElementById("attend").value;
+      const playerRaw = document.getElementById("playerName").value.trim();
+      const attendance = Number(document.getElementById("attend").value || 0);
       const attendanceStatus = document.getElementById("attnFlag").textContent;
       const totalScore = document.getElementById("total").textContent;
       const total100 = document.getElementById("outOf100").textContent;
+      const generatedStamp = new Date().toLocaleString();
 
       const rows = metricMeta
         .map((meta) => {
-          const score = document.getElementById(meta.id).value;
+          const scoreValue = Number(document.getElementById(meta.id).value);
+          const reasonRaw = document.getElementById(meta.reason).value.trim();
           const reason =
-            document.getElementById(meta.reason).value.trim() || "—";
+            reasonRaw.length > 0
+              ? escapeHtml(reasonRaw).replace(/\n/g, "<br>")
+              : "—";
           return `
             <tr>
               <td>${meta.label}</td>
-              <td>${Number(score).toFixed(2)}</td>
-              <td>${reason.replace(/\\n/g, "<br>")}</td>
+              <td>${scoreValue.toFixed(2)}</td>
+              <td>${reason}</td>
             </tr>`;
         })
         .join("");
 
-      const summaryBlock = `
-        <div class="summary">
-          <div><strong>Total (0-10):</strong> ${totalScore}</div>
-          <div><strong>Total (0-100):</strong> ${total100}</div>
-          <div><strong>Attendance:</strong> ${attendance}%</div>
-          <div><strong>Status:</strong> ${attendanceStatus}</div>
-        </div>`;
+      const weightRows = Object.entries(weights)
+        .map(([key, value]) => {
+          const label = metricMeta.find((meta) => meta.id === key)?.label || key;
+          return `
+            <tr>
+              <td>${label}</td>
+              <td>${(value * 100).toFixed(0)}%</td>
+            </tr>`;
+        })
+        .join("");
 
       const pdfShell = document.createElement("div");
       pdfShell.innerHTML = `
         <style>
-          body { font-family: Arial, sans-serif; color: #111; }
-          h1 { font-size: 24px; margin: 0 0 8px; }
-          h2 { font-size: 18px; margin: 16px 0 8px; }
+          * { box-sizing: border-box; }
+          body { font-family: "Segoe UI", Arial, sans-serif; color: #1a1f2b; margin: 0; }
+          h1 { font-size: 24px; margin: 0 0 6px; color: #0c1a33; }
+          h2 { font-size: 16px; margin: 18px 0 8px; color: #0c1a33; }
           table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-          th, td { border: 1px solid #ccc; padding: 8px; font-size: 13px; }
-          th { background: #f4f7fb; text-align: left; }
-          .summary { display: grid; gap: 6px; font-size: 14px; }
-          .meta { margin: 8px 0; font-size: 14px; }
+          th, td { border: 1px solid #d3dbe7; padding: 9px 10px; font-size: 13px; vertical-align: top; }
+          th { background: #eef3fb; text-align: left; font-weight: 600; }
+          .layout { padding: 28px 32px; }
+          .meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; margin: 10px 0 4px; }
+          .meta div { min-width: 180px; }
+          .summary { display: flex; flex-wrap: wrap; gap: 16px; background: #f7f9fc; border: 1px solid #d3dbe7; padding: 14px 16px; border-radius: 10px; font-size: 13px; }
+          .summary div { min-width: 160px; }
+          .weights { margin-top: 4px; }
+          .generated { margin-top: 12px; font-size: 12px; color: #52607a; }
         </style>
-        <div>
+        <div class="layout">
           <h1>Starstruck Player Performance Review</h1>
-          <div class="meta"><strong>Player:</strong> ${player || "—"}</div>
-          ${summaryBlock}
+          <div class="meta">
+            <div><strong>Player:</strong> ${playerRaw ? escapeHtml(playerRaw) : "—"}</div>
+            <div><strong>Attendance:</strong> ${attendance.toFixed(0)}%</div>
+            <div><strong>Status:</strong> ${escapeHtml(attendanceStatus || "—")}</div>
+          </div>
+          <div class="summary">
+            <div><strong>Total (0 – 10):</strong> ${totalScore}</div>
+            <div><strong>Total (0 – 100):</strong> ${total100}</div>
+            <div><strong>Report Generated:</strong> ${escapeHtml(generatedStamp)}</div>
+          </div>
           <h2>Metric Breakdown</h2>
           <table>
             <thead>
               <tr>
                 <th>Metric</th>
-                <th>Score (0-10)</th>
-                <th>Reason</th>
+                <th>Score (0 – 10)</th>
+                <th>Reasoning / Notes</th>
               </tr>
             </thead>
             <tbody>${rows}</tbody>
           </table>
+          <h2>Weight Reference</h2>
+          <table class="weights">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Weight</th>
+              </tr>
+            </thead>
+            <tbody>${weightRows}</tbody>
+          </table>
+          <div class="generated">Generated for Starstruck leadership review.</div>
         </div>`;
 
-      const filenameBase = player
-        ? player.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+      const filenameBase = playerRaw
+        ? playerRaw.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
         : "player-review";
 
       const options = {
-        margin: 0.5,
+        margin: 0.4,
         filename: `${filenameBase || "player-review"}.pdf`,
-        image: { type: "jpeg", quality: 0.96 },
-        html2canvas: { scale: 2 },
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
       };
 
-      if (typeof html2pdf === "function") {
-        html2pdf().set(options).from(pdfShell).save();
-      } else {
+      if (typeof html2pdf !== "function") {
+        console.warn("html2pdf failed to load; falling back to browser print.");
         window.print();
+        return;
       }
+
+      html2pdf().set(options).from(pdfShell).save();
     }
 
     function bindInputs() {
