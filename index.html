@@ -311,6 +311,7 @@
 
       <div class="stack">
         <button id="reset">Reset to 10s</button>
+        <button id="downloadPdf">Download PDF</button>
       </div>
 
       <div class="result">
@@ -328,6 +329,12 @@
 
   </div>
 
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+    integrity="sha512-y8bZ0r7OjTBYMJd3wa9u0edPFsKnz03Wx/ju0RduCMsZ/HXXIQK5vC1DY0RYx1b6jVKWkPYqgkP4dFl4p9GTAQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
   <script>
     const weights = {
       adapt: 0.3,
@@ -337,6 +344,15 @@
       raw: 0.05,
       attitude: 0.05,
     };
+
+    const metricMeta = [
+      { id: "adapt", label: "Adaptability", reason: "adaptReason" },
+      { id: "mech", label: "Mechanics Execution", reason: "mechReason" },
+      { id: "class", label: "Class Specific Execution", reason: "classReason" },
+      { id: "prep", label: "Raid Prep", reason: "prepReason" },
+      { id: "raw", label: "Raw Parses", reason: "rawReason" },
+      { id: "attitude", label: "Attitude", reason: "attitudeReason" },
+    ];
 
     const activeWeightSum = Object.values(weights).reduce(
       (acc, value) => acc + value,
@@ -402,7 +418,104 @@
     }
 
     document.getElementById("reset").addEventListener("click", () => {
-      ["adapt", "mech", "class", "prep", "raw", "attitude"].forEach((id) => {
+      metricMeta.forEach((meta) => {
+        document.getElementById(meta.id).value = 10;
+      });
+      document.getElementById("attend").value = 100;
+      document.querySelectorAll(".reason-input").forEach((element) => {
+        element.value = "";
+      });
+      calc();
+    });
+
+    document
+      .getElementById("downloadPdf")
+      .addEventListener("click", handleDownloadPdf);
+
+    function handleDownloadPdf() {
+      const player = document.getElementById("playerName").value.trim();
+      const attendance = document.getElementById("attend").value;
+      const attendanceStatus = document.getElementById("attnFlag").textContent;
+      const totalScore = document.getElementById("total").textContent;
+      const total100 = document.getElementById("outOf100").textContent;
+
+      const rows = metricMeta
+        .map((meta) => {
+          const score = document.getElementById(meta.id).value;
+          const reason =
+            document.getElementById(meta.reason).value.trim() || "—";
+          return `
+            <tr>
+              <td>${meta.label}</td>
+              <td>${Number(score).toFixed(2)}</td>
+              <td>${reason.replace(/\\n/g, "<br>")}</td>
+            </tr>`;
+        })
+        .join("");
+
+      const summaryBlock = `
+        <div class="summary">
+          <div><strong>Total (0-10):</strong> ${totalScore}</div>
+          <div><strong>Total (0-100):</strong> ${total100}</div>
+          <div><strong>Attendance:</strong> ${attendance}%</div>
+          <div><strong>Status:</strong> ${attendanceStatus}</div>
+        </div>`;
+
+      const pdfShell = document.createElement("div");
+      pdfShell.innerHTML = `
+        <style>
+          body { font-family: Arial, sans-serif; color: #111; }
+          h1 { font-size: 24px; margin: 0 0 8px; }
+          h2 { font-size: 18px; margin: 16px 0 8px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+          th, td { border: 1px solid #ccc; padding: 8px; font-size: 13px; }
+          th { background: #f4f7fb; text-align: left; }
+          .summary { display: grid; gap: 6px; font-size: 14px; }
+          .meta { margin: 8px 0; font-size: 14px; }
+        </style>
+        <div>
+          <h1>Starstruck Player Performance Review</h1>
+          <div class="meta"><strong>Player:</strong> ${player || "—"}</div>
+          ${summaryBlock}
+          <h2>Metric Breakdown</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Score (0-10)</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+
+      const filenameBase = player
+        ? player.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+        : "player-review";
+
+      const options = {
+        margin: 0.5,
+        filename: `${filenameBase || "player-review"}.pdf`,
+        image: { type: "jpeg", quality: 0.96 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+      };
+
+      html2pdf().set(options).from(pdfShell).save();
+    }
+
+    document.querySelectorAll("input").forEach((element) => {
+      element.addEventListener("input", calc);
+    });
+    metricMeta.forEach((meta) => {
+      document.getElementById(meta.id).value = 10;
+    });
+    document.getElementById("attend").value = 100;
+    document.querySelectorAll(".reason-input").forEach((element) => {
+      element.value = "";
+    });
+    calc();
         document.getElementById(id).value = 10;
       });
       document.getElementById("attend").value = 100;
