@@ -475,13 +475,18 @@
         .join("");
 
       const pdfShell = document.createElement("div");
+      pdfShell.style.position = "fixed";
+      pdfShell.style.left = "-10000px";
+      pdfShell.style.top = "0";
+      pdfShell.style.width = "720px"; /* (8.5in - 2*0.5in) at 96dpi */
       pdfShell.innerHTML = `
         <style>
           * { box-sizing: border-box; }
           body { font-family: "Segoe UI", Arial, sans-serif; color: #1a1f2b; margin: 0; }
           h1 { font-size: 24px; margin: 0 0 6px; color: #0c1a33; }
           h2 { font-size: 16px; margin: 18px 0 8px; color: #0c1a33; }
-          table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 8px; page-break-inside: avoid; }
+          thead { display: table-header-group; }
           th, td { border: 1px solid #d3dbe7; padding: 9px 10px; font-size: 13px; vertical-align: top; }
           th { background: #eef3fb; text-align: left; font-weight: 600; }
           .layout { padding: 28px 32px; }
@@ -533,7 +538,7 @@
         : "player-review";
 
       const options = {
-        margin: 0.4,
+        margin: 0.5,
         filename: `${filenameBase || "player-review"}.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
@@ -546,7 +551,19 @@
         return;
       }
 
-      html2pdf().set(options).from(pdfShell).save();
+      document.body.appendChild(pdfShell);
+      html2pdf()
+        .set(options)
+        .from(pdfShell)
+        .save()
+        .then(() => {
+          document.body.removeChild(pdfShell);
+        })
+        .catch((err) => {
+          document.body.removeChild(pdfShell);
+          console.error("Failed to generate PDF:", err);
+          window.print();
+        });
     }
 
     function bindInputs() {
