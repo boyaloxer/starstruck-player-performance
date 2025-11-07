@@ -535,26 +535,6 @@
     bindInputs();
     initializeDefaults();
     calc();
-        document.getElementById(id).value = 10;
-      });
-      document.getElementById("attend").value = 100;
-      document.querySelectorAll(".reason-input").forEach((element) => {
-        element.value = "";
-      });
-      calc();
-    });
-
-    document.querySelectorAll("input").forEach((element) => {
-      element.addEventListener("input", calc);
-    });
-    ["adapt", "mech", "class", "prep", "raw", "attitude"].forEach((id) => {
-      document.getElementById(id).value = 10;
-    });
-    document.getElementById("attend").value = 100;
-    document.querySelectorAll(".reason-input").forEach((element) => {
-      element.value = "";
-    });
-    calc();
   </script>
 </body>
 </html>
