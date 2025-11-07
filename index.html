@@ -310,7 +310,6 @@
       </div>
 
       <div class="stack">
-        <button id="reset">Reset to 10s</button>
         <button id="downloadPdf">Download PDF</button>
       </div>
 
@@ -414,17 +413,6 @@
       const normalized = `Active Weight Sum = ${(activeWeightSum * 100).toFixed(0)}% (normalized)`;
       get("weights").innerHTML = `${weightLines}<br>${normalized}`;
     }
-
-    document.getElementById("reset").addEventListener("click", () => {
-      metricMeta.forEach((meta) => {
-        document.getElementById(meta.id).value = 10;
-      });
-      document.getElementById("attend").value = 100;
-      document.querySelectorAll(".reason-input").forEach((element) => {
-        element.value = "";
-      });
-      calc();
-    });
 
     document
       .getElementById("downloadPdf")
