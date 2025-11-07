@@ -507,20 +507,12 @@
       doc.setTextColor(...colors.text);
       doc.text("Starstruck Player Performance Review", marginX, cursorY);
 
-      cursorY += 24;
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.setTextColor(...colors.accent);
-      doc.text(`Player:`, marginX, cursorY);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(...colors.text);
-      doc.text(playerRaw, marginX + 52, cursorY);
-
       cursorY += 18;
       doc.setFontSize(11);
       doc.setTextColor(...colors.text);
 
       const metaEntries = [
+        { label: "Player", value: playerRaw },
         { label: "Attendance", value: `${attendance.toFixed(0)}%` },
         { label: "Status", value: attendanceStatus },
       ];
