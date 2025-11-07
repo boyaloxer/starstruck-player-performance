@@ -525,21 +525,15 @@
         { label: "Report Generated", value: generatedStamp },
       ];
 
-      const summaryPositions = [
-        marginX + 36,
-        marginX + contentWidth / 2,
-        marginX + contentWidth - 36,
-      ];
-
+      const summaryColumnWidth = contentWidth / summaryItems.length;
       summaryItems.forEach((entry, index) => {
-        const columnX = summaryPositions[index];
-        const align = index === 0 ? "left" : index === 1 ? "center" : "right";
+        const columnX = marginX + index * summaryColumnWidth + summaryColumnWidth / 2;
         doc.setFont("helvetica", "bold");
         doc.setTextColor(...colors.accent);
-        doc.text(entry.label, columnX, cursorY - 18, { align });
+        doc.text(entry.label, columnX, cursorY - 18, { align: "center" });
         doc.setFont("helvetica", "normal");
         doc.setTextColor(...colors.text);
-        doc.text(entry.value, columnX, cursorY + 4, { align });
+        doc.text(entry.value, columnX, cursorY + 4, { align: "center" });
       });
 
       cursorY += summaryHeight + 18;
