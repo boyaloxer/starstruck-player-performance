@@ -329,7 +329,8 @@
 
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <script>
     const weights = {
       adapt: 0.3,
@@ -429,141 +430,179 @@
       .getElementById("downloadPdf")
       .addEventListener("click", handleDownloadPdf);
 
-    function escapeHtml(raw) {
-      return raw
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
     function handleDownloadPdf() {
-      const playerRaw = document.getElementById("playerName").value.trim();
-      const attendance = Number(document.getElementById("attend").value || 0);
-      const attendanceStatus = document.getElementById("attnFlag").textContent;
-      const totalScore = document.getElementById("total").textContent;
-      const total100 = document.getElementById("outOf100").textContent;
-      const generatedStamp = new Date().toLocaleString();
-
-      const rows = metricMeta
-        .map((meta) => {
-          const scoreValue = Number(document.getElementById(meta.id).value);
-          const reasonRaw = document.getElementById(meta.reason).value.trim();
-          const reason =
-            reasonRaw.length > 0
-              ? escapeHtml(reasonRaw).replace(/\n/g, "<br>")
-              : "—";
-          return `
-            <tr>
-              <td>${meta.label}</td>
-              <td>${scoreValue.toFixed(2)}</td>
-              <td>${reason}</td>
-            </tr>`;
-        })
-        .join("");
-
-      const weightRows = Object.entries(weights)
-        .map(([key, value]) => {
-          const label = metricMeta.find((meta) => meta.id === key)?.label || key;
-          return `
-            <tr>
-              <td>${label}</td>
-              <td>${(value * 100).toFixed(0)}%</td>
-            </tr>`;
-        })
-        .join("");
-
-      const pdfShell = document.createElement("div");
-      pdfShell.style.position = "fixed";
-      pdfShell.style.left = "-10000px";
-      pdfShell.style.top = "0";
-      pdfShell.style.width = "720px"; /* (8.5in - 2*0.5in) at 96dpi */
-      pdfShell.innerHTML = `
-        <style>
-          * { box-sizing: border-box; }
-          body { font-family: "Segoe UI", Arial, sans-serif; color: #1a1f2b; margin: 0; }
-          h1 { font-size: 24px; margin: 0 0 6px; color: #0c1a33; }
-          h2 { font-size: 16px; margin: 18px 0 8px; color: #0c1a33; }
-          table { width: 100%; border-collapse: collapse; margin-top: 8px; page-break-inside: avoid; }
-          thead { display: table-header-group; }
-          th, td { border: 1px solid #d3dbe7; padding: 9px 10px; font-size: 13px; vertical-align: top; }
-          th { background: #eef3fb; text-align: left; font-weight: 600; }
-          .layout { padding: 28px 32px; }
-          .meta { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; margin: 10px 0 4px; }
-          .meta div { min-width: 180px; }
-          .summary { display: flex; flex-wrap: wrap; gap: 16px; background: #f7f9fc; border: 1px solid #d3dbe7; padding: 14px 16px; border-radius: 10px; font-size: 13px; }
-          .summary div { min-width: 160px; }
-          .weights { margin-top: 4px; }
-          .generated { margin-top: 12px; font-size: 12px; color: #52607a; }
-        </style>
-        <div class="layout">
-          <h1>Starstruck Player Performance Review</h1>
-          <div class="meta">
-            <div><strong>Player:</strong> ${playerRaw ? escapeHtml(playerRaw) : "—"}</div>
-            <div><strong>Attendance:</strong> ${attendance.toFixed(0)}%</div>
-            <div><strong>Status:</strong> ${escapeHtml(attendanceStatus || "—")}</div>
-          </div>
-          <div class="summary">
-            <div><strong>Total (0 – 10):</strong> ${totalScore}</div>
-            <div><strong>Total (0 – 100):</strong> ${total100}</div>
-            <div><strong>Report Generated:</strong> ${escapeHtml(generatedStamp)}</div>
-          </div>
-          <h2>Metric Breakdown</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Metric</th>
-                <th>Score (0 – 10)</th>
-                <th>Reasoning / Notes</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-          <h2>Weight Reference</h2>
-          <table class="weights">
-            <thead>
-              <tr>
-                <th>Metric</th>
-                <th>Weight</th>
-              </tr>
-            </thead>
-            <tbody>${weightRows}</tbody>
-          </table>
-          <div class="generated">Generated for Starstruck leadership review.</div>
-        </div>`;
-
-      const filenameBase = playerRaw
-        ? playerRaw.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
-        : "player-review";
-
-      const options = {
-        margin: 0.5,
-        filename: `${filenameBase || "player-review"}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-      };
-
-      if (typeof html2pdf !== "function") {
-        console.warn("html2pdf failed to load; falling back to browser print.");
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        console.error("jsPDF failed to load; falling back to print.");
         window.print();
         return;
       }
 
-      document.body.appendChild(pdfShell);
-      html2pdf()
-        .set(options)
-        .from(pdfShell)
-        .save()
-        .then(() => {
-          document.body.removeChild(pdfShell);
-        })
-        .catch((err) => {
-          document.body.removeChild(pdfShell);
-          console.error("Failed to generate PDF:", err);
-          window.print();
-        });
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "pt", format: "letter" });
+      const marginX = 54;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const contentWidth = pageWidth - marginX * 2;
+      let cursorY = 80;
+
+      const getValue = (value, fallback = "—") =>
+        value && value.toString().trim().length > 0 ? value.toString().trim() : fallback;
+
+      const playerRaw = getValue(document.getElementById("playerName").value, "—");
+      const attendance = Number(document.getElementById("attend").value || 0);
+      const attendanceStatus = getValue(
+        document.getElementById("attnFlag").textContent,
+        "—",
+      );
+      const totalScore = getValue(document.getElementById("total").textContent, "0.00");
+      const total100 = getValue(document.getElementById("outOf100").textContent, "0.00 / 100");
+      const generatedStamp = new Date().toLocaleString();
+
+      const metricRows = metricMeta.map((meta) => {
+        const scoreValue = Number(document.getElementById(meta.id).value);
+        const reasonRaw = getValue(
+          document.getElementById(meta.reason).value,
+          "—",
+        );
+        return [
+          meta.label,
+          scoreValue.toFixed(2),
+          reasonRaw.replace(/\r\n/g, "\n"),
+        ];
+      });
+
+      const weightRows = Object.entries(weights).map(([key, value]) => {
+        const label = metricMeta.find((meta) => meta.id === key)?.label || key;
+        return [label, `${(value * 100).toFixed(0)}%`];
+      });
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(12, 26, 51);
+      doc.text("Starstruck Player Performance Review", marginX, cursorY);
+
+      cursorY += 26;
+      doc.setFontSize(11);
+      doc.setTextColor(26, 31, 43);
+
+      const metaEntries = [
+        { label: "Player", value: playerRaw },
+        { label: "Attendance", value: `${attendance.toFixed(0)}%` },
+        { label: "Status", value: attendanceStatus },
+      ];
+
+      const metaColumnWidth = contentWidth / metaEntries.length;
+      metaEntries.forEach((entry, index) => {
+        const columnX = marginX + index * metaColumnWidth;
+        doc.setFont("helvetica", "bold");
+        doc.text(`${entry.label}:`, columnX, cursorY);
+        doc.setFont("helvetica", "normal");
+        doc.text(entry.value, columnX + 58, cursorY);
+      });
+
+      cursorY += 28;
+      const summaryHeight = 64;
+      doc.setDrawColor(211, 219, 231);
+      doc.setFillColor(247, 249, 252);
+      doc.roundedRect(marginX, cursorY - 44, contentWidth, summaryHeight, 10, 10, "FD");
+
+      const summaryItems = [
+        { label: "Total (0 - 10)", value: totalScore },
+        { label: "Total (0 - 100)", value: total100 },
+        { label: "Report Generated", value: generatedStamp },
+      ];
+
+      const summaryColumnWidth = contentWidth / summaryItems.length;
+      summaryItems.forEach((entry, index) => {
+        const columnX = marginX + index * summaryColumnWidth + 16;
+        doc.setFont("helvetica", "bold");
+        doc.text(entry.label, columnX, cursorY - 18);
+        doc.setFont("helvetica", "normal");
+        doc.text(entry.value, columnX, cursorY + 4);
+      });
+
+      cursorY += summaryHeight + 10;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Metric Breakdown", marginX, cursorY);
+
+      cursorY += 8;
+      doc.autoTable({
+        startY: cursorY,
+        head: [["Metric", "Score (0 - 10)", "Reasoning / Notes"]],
+        body: metricRows,
+        margin: { left: marginX, right: marginX },
+        headStyles: {
+          fillColor: [238, 243, 251],
+          textColor: [12, 26, 51],
+          fontSize: 11,
+        },
+        styles: {
+          font: "helvetica",
+          fontSize: 10,
+          cellPadding: { top: 6, right: 6, bottom: 6, left: 6 },
+          lineColor: [211, 219, 231],
+          lineWidth: 0.6,
+          textColor: [26, 31, 43],
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 253],
+        },
+        columnStyles: {
+          1: { halign: "center", cellWidth: 90 },
+          2: { cellWidth: contentWidth - 90 - 120 },
+        },
+        didDrawPage: (data) => {
+          doc.setFontSize(10);
+          doc.setTextColor(120, 130, 150);
+          doc.text(
+            `Starstruck Player Performance · Generated ${generatedStamp}`,
+            marginX,
+            doc.internal.pageSize.getHeight() - 30,
+          );
+        },
+      });
+
+      let tableBottom = doc.lastAutoTable.finalY;
+      if (tableBottom === undefined) {
+        tableBottom = cursorY + 20;
+      }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Weight Reference", marginX, tableBottom + 26);
+
+      doc.autoTable({
+        startY: tableBottom + 34,
+        head: [["Metric", "Weight"]],
+        body: weightRows,
+        margin: { left: marginX, right: marginX },
+        headStyles: {
+          fillColor: [238, 243, 251],
+          textColor: [12, 26, 51],
+          fontSize: 11,
+        },
+        styles: {
+          font: "helvetica",
+          fontSize: 10,
+          cellPadding: { top: 6, right: 6, bottom: 6, left: 6 },
+          lineColor: [211, 219, 231],
+          lineWidth: 0.6,
+          textColor: [26, 31, 43],
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 253],
+        },
+        columnStyles: {
+          1: { halign: "center" },
+        },
+      });
+
+      const filenameBase = playerRaw
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      doc.save(`${filenameBase || "player-review"}.pdf`);
     }
 
     function bindInputs() {
